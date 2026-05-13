@@ -41,11 +41,17 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configure environment
-The `.env` file is pre-configured. To use your own API key edit `.env`:
+Copy `.env.example` to `.env`, then add your own API key:
+```bash
+cp .env.example .env
+```
+Open `.env` and fill in:
 ```
 GROQ_API_KEY="your_groq_api_key_here"
 ```
 Get a free key at: https://console.groq.com
+
+> **Note:** `.env` is gitignored. Do not commit it.
 
 ### 4. Run the system
 ```bash
