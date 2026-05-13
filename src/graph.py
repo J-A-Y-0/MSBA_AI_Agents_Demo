@@ -142,28 +142,17 @@ def node_audit(state: AppState) -> AppState:
     attempts = state.get("audit_attempts", 0)
     history  = state.get("audit_history", [])
 
-    # Force pass after max attempts
-    if attempts >= MAX_AUDIT_ATTEMPTS:
-        history.append({
-            "attempt": attempts + 1,
-            "result": "PASS_WITH_WARNING",
-            "violations": ["Max audit attempts reached — manual review required"],
-            "corrections": [],
-        })
-        return {
-            "audit_result": "PASS_WITH_WARNING",
-            "audit_violations": ["Max audit attempts reached — manual review required"],
-            "audit_corrections": [],
-            "audit_attempts": attempts + 1,
-            "audit_history": history,
-        }
-
     audit = run_audit_agent(
         dq_summary=state.get("dq_summary", {}),
         weather_risk=state.get("weather_risk", {}),
         resource_constraints=state.get("resource_constraints", {}),
         dispatch_plan=state.get("dispatch_plan", ""),
     )
+
+    # If this is the final attempt and still failing, force PASS_WITH_WARNING
+    if audit["result"] == "FAIL" and (attempts + 1) >= MAX_AUDIT_ATTEMPTS:
+        audit["result"] = "PASS_WITH_WARNING"
+        audit["violations"].append("Max audit attempts reached — manual review required")
 
     history.append({
         "attempt": attempts + 1,
